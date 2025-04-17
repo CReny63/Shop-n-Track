@@ -8,7 +8,7 @@ import java.awt.*;
  * The duplicate brand label is removed (the app bar already shows the brand).
  */
 
-//TEST PUSH
+//TEST PUSH 2
 class HomePage extends JPanel {
     private MainFrame frame;
     private JTextField searchField;
