@@ -7,6 +7,8 @@ import java.awt.*;
  * and shows the account button only if no user is logged in (otherwise “View Profile” is shown).
  * The duplicate brand label is removed (the app bar already shows the brand).
  */
+
+//TEST PUSH
 class HomePage extends JPanel {
     private MainFrame frame;
     private JTextField searchField;
