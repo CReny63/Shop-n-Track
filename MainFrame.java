@@ -48,6 +48,7 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
+    /* Creates the title*/
     private JPanel createAppBar() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -95,7 +96,7 @@ public class MainFrame extends JFrame {
         if (in == null) {
             try {
                 in = new FileInputStream("items.csv");
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException e) { //throw error if no file found
                 System.err.println("CSV file not found.");
                 return list;
             }
