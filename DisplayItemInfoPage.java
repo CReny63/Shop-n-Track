@@ -29,28 +29,34 @@ class DisplayItemInfoPage extends JPanel {
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
         infoPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         JLabel sellerLabel = new JLabel("Seller: " + item.storeName);
         sellerLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(sellerLabel);
         infoPanel.add(Box.createVerticalStrut(10));
+
         JLabel shippingLabel = new JLabel("Shipping: Free Shipping");
         shippingLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(shippingLabel);
         infoPanel.add(Box.createVerticalStrut(10));
+
         JLabel rewardLabel = new JLabel("Reward Points Eligibility: Eligible");
         rewardLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(rewardLabel);
         infoPanel.add(Box.createVerticalStrut(10));
+
         JLabel reputationLabel = new JLabel("Seller Reputation: Excellent");
         reputationLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(reputationLabel);
         infoPanel.add(Box.createVerticalStrut(10));
+
         JLabel disputeLabel = new JLabel("Dispute Resolution: Fair and Timely");
         disputeLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(disputeLabel);
+
         JButton backButton = new JButton("Back");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        backButton.addActionListener(e -> frame.showHomePage());
+        backButton.addActionListener(e -> frame.showSearchResults(""));
         infoPanel.add(Box.createVerticalStrut(20));
         infoPanel.add(backButton);
         add(infoPanel, BorderLayout.SOUTH);

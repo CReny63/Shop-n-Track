@@ -86,8 +86,12 @@ class SearchResultsPage extends JPanel {
         resultsPanel.revalidate();
         resultsPanel.repaint();
     }
-
+//search for item
+    //rewards points update
+    //display recommended items, rotating
     // Create an individual item panel.
+    //rid of dispute
+    //color code seller reputation
     private JPanel createItemPanel(Item item) {
         JPanel itemPanel = new JPanel();
         itemPanel.setLayout(new BoxLayout(itemPanel, BoxLayout.Y_AXIS));

@@ -64,7 +64,7 @@ class LoginPage extends JPanel {
                 JOptionPane.showMessageDialog(this, "Invalid username or password.",
                         "Login Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                frame.showHomePage();
+                frame.showSearchResults("");
             }
         });
 
