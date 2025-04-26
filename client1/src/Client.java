@@ -1,9 +1,9 @@
-// Client.java
+package client1.src;// client1.src.Client.java
 import java.io.*;
 import java.net.*;
 
 /**
- * Client: Manages a TCP connection to the server for sending and receiving messages.
+ * client1.src.Client: Manages a TCP connection to the server for sending and receiving messages.
  */
 public class Client {
     private final Socket socket;

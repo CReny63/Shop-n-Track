@@ -1,24 +1,27 @@
-// MainFrame.java
+package client1.src;
+
+import common.src.Item;
+import common.src.User;
 import javax.swing.*;
 import java.awt.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * MainFrame: The main window that switches among pages using CardLayout,
- * and delegates navigation commands through a TCP server.
- */
 public class MainFrame extends JFrame {
     private final Client client;
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
 
-    public static final String PAGE_HOME    = "HomePage";
-    public static final String PAGE_RESULTS = "SearchResultsPage";
-    public static final String PAGE_ITEMINFO= "ItemInfoPage";
-    public static final String PAGE_LOGIN   = "LoginPage";
-    public static final String PAGE_PROFILE = "ProfilePage";
+    public static final String PAGE_HOME     = "HomePage";
+    public static final String PAGE_RESULTS  = "SearchResultsPage";
+    public static final String PAGE_ITEMINFO = "ItemInfoPage";
+    public static final String PAGE_LOGIN    = "LoginPage";
+    public static final String PAGE_PROFILE  = "ProfilePage";
 
     public static User currentUser = null;
     public static List<User> accounts = new ArrayList<>();
@@ -26,7 +29,7 @@ public class MainFrame extends JFrame {
 
     public MainFrame() throws IOException {
         super("Shop N Track");
-        // Connect to server
+        // Connect to server (socket)
         this.client = new Client("localhost", 12345);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -66,7 +69,7 @@ public class MainFrame extends JFrame {
     private void handleServerMessage(String msg) {
         // Expected format: COMMAND:PAYLOAD
         String[] parts = msg.split(":", 2);
-        String cmd = parts[0], payload = parts.length>1? parts[1] : null;
+        String cmd = parts[0], payload = parts.length > 1 ? parts[1] : null;
 
         SwingUtilities.invokeLater(() -> {
             switch (cmd) {
@@ -84,6 +87,8 @@ public class MainFrame extends JFrame {
 
     // Navigation helpers (called after server instructs SHOW_PAGE)
     public void showHomePage() {
+        HomePage homePage = new HomePage(this);
+        contentPanel.add(homePage, PAGE_HOME);
         cardLayout.show(contentPanel, PAGE_HOME);
     }
 
@@ -113,31 +118,49 @@ public class MainFrame extends JFrame {
 
     private static List<Item> loadItemsFromCSV() {
         List<Item> list = new ArrayList<>();
-        InputStream in = MainFrame.class.getResourceAsStream("/items.csv");
-        if (in == null) {
-            try { in = new FileInputStream("items.csv"); }
-            catch (FileNotFoundException e) {
-                System.err.println("CSV file not found.");
+        String serverBase = "http://localhost:12345";
+        String csvPath     = "/items.csv";
+
+        try {
+            // FETCH CSV directly (public raw endpoint)
+            URL csvUrl = new URL(serverBase + csvPath);
+            HttpURLConnection csvConn = (HttpURLConnection) csvUrl.openConnection();
+            csvConn.setRequestMethod("GET");
+            if (csvConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                System.err.println("Failed to fetch CSV (HTTP " + csvConn.getResponseCode() + ")");
                 return list;
             }
-        }
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
-            br.readLine(); // skip header
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length >= 4) {
-                    String nm = parts[0].trim(), store = parts[1].trim(), img=parts[3].trim();
-                    double cur = Double.parseDouble(parts[2].trim());
-                    List<Double> history = new ArrayList<>();
-                    for (int i=4;i<parts.length;i++) try{history.add(Double.parseDouble(parts[i].trim()));}catch(Exception ex){}
-                    double[] prev = history.stream().mapToDouble(d->d).toArray();
-                    list.add(new Item(nm, store, cur, img, prev));
+
+            // PARSE CSV
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(csvConn.getInputStream()))) {
+                br.readLine(); // skip header
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] parts = line.split(",");
+                    if (parts.length >= 4) {
+                        String nm    = parts[0].trim();
+                        String store = parts[1].trim();
+                        double cur   = Double.parseDouble(parts[2].trim());
+                        String img   = parts[3].trim();
+
+                        // parse any extra historical prices
+                        List<Double> history = new ArrayList<>();
+                        for (int i = 4; i < parts.length; i++) {
+                            try { history.add(Double.parseDouble(parts[i].trim())); }
+                            catch (NumberFormatException ignore) {}
+                        }
+                        double[] prev = history.stream().mapToDouble(d -> d).toArray();
+
+                        list.add(new Item(nm, store, cur, img, prev));
+                    }
                 }
             }
+
         } catch (IOException e) {
-            System.err.println("Error reading CSV: " + e.getMessage());
+            System.err.println("Error loading CSV from server: " + e.getMessage());
         }
+
         return list;
     }
 
