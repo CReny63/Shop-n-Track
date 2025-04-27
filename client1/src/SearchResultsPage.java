@@ -70,7 +70,7 @@ class SearchResultsPage extends JPanel {
         JScrollPane scrollPane = new JScrollPane(resultsPanel);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Listen for changes in the search field.
+        // Listen for changes in the search field, allows for instant update when typing
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { performSearch(); }
             public void removeUpdate(DocumentEvent e) { performSearch(); }
@@ -85,6 +85,9 @@ class SearchResultsPage extends JPanel {
         resultsPanel.removeAll();
         for (Item item : MainFrame.allItems) {
             if (item.itemName.toLowerCase().contains(query)) {
+                resultsPanel.add(createItemPanel(item));
+            }
+            if (item.storeName.toLowerCase().contains(query)) {
                 resultsPanel.add(createItemPanel(item));
             }
         }
