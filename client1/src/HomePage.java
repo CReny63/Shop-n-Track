@@ -45,6 +45,7 @@ class HomePage extends JPanel {
         viewCartBtn.setFont(new Font("SansSerif", Font.PLAIN, 14));
         viewCartBtn.addActionListener(e -> {
             // create a dummy SearchResultsPage just to call its displayCart()
+            //future update make display Cart its own class to get rid of dummy page
             new SearchResultsPage(frame, "").displayCart();
         });
         add(viewCartBtn, gbc);
@@ -95,8 +96,24 @@ class HomePage extends JPanel {
         add(searchPanel, gbc);
         gbc.gridwidth = 1;
 
-        // Row 4: Carousel panel
+        // Row 4: Store buttons
         gbc.gridy = 4;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JPanel storePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        String[] stores = {"Apple","Samsung","Sony","LG"};
+        for (String s : stores) {
+            JButton btn = new JButton("Shop " + s);
+            btn.addActionListener(e -> frame.showSearchResults(s));
+            storePanel.add(btn);
+        }
+        add(storePanel, gbc);
+        gbc.gridwidth = 1;
+
+
+        // Row 5: Carousel panel
+        gbc.gridy = 5;
         gbc.gridx = 0;
         gbc.gridwidth = 3;
         gbc.weighty = 1.0;
@@ -119,8 +136,8 @@ class HomePage extends JPanel {
             updateCarousel();
         }).start();
 
-        // Row 5: Account button
-        gbc.gridy = 5;
+        // Row 6: Account button
+        gbc.gridy = 6;
         gbc.gridx = 0;
         gbc.gridwidth = 2;
         gbc.weighty = 0;

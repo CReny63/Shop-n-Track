@@ -69,6 +69,7 @@ class DisplayItemInfoPage extends JPanel {
         reputationLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         infoPanel.add(reputationLabel);
         infoPanel.add(Box.createVerticalStrut(10));
+
         // Back button
         JButton backButton = new JButton("Back");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
