@@ -54,9 +54,6 @@ class DisplayItemInfoPage extends JPanel {
         infoPanel.add(reputationLabel);
         infoPanel.add(Box.createVerticalStrut(10));
 
-        JLabel disputeLabel = new JLabel("Dispute Resolution: Fair and Timely");
-        disputeLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        infoPanel.add(disputeLabel);
 
         JButton backButton = new JButton("Back");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
