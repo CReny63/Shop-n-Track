@@ -55,7 +55,7 @@ class DisplayItemInfoPage extends JPanel {
         infoPanel.add(Box.createVerticalStrut(10));
 
         // Seller reputation with partial color coding
-        String repText = "Excellent"; // Or fetch from item if available
+        String repText = item.storeReputation;
         String color;
         switch (repText.toLowerCase()) {
             case "excellent": color = "green";  break;

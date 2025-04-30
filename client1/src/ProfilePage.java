@@ -4,6 +4,7 @@ import common.src.*;
 import javax.swing.*;
 import java.awt.*;
 
+//points conversion in profile page, between colon and "points"
 /**
  * client1.src.ProfilePage: Displays the user's account information in a professional layout.
  */
@@ -29,7 +30,7 @@ class ProfilePage extends JPanel {
         infoPanel.add(passwordLabel);
         infoPanel.add(Box.createVerticalStrut(12));
 
-        JLabel rewardLabel = new JLabel("Reward Points: " + user.rewardPoints);
+        JLabel rewardLabel = new JLabel("Reward Points: " + user.rewardPoints);//points conversion in profile page, between colon and "points"
         rewardLabel.setFont(new Font("SansSerif", Font.PLAIN, 18));
         infoPanel.add(rewardLabel);
         infoPanel.add(Box.createVerticalStrut(20));

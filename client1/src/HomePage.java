@@ -219,7 +219,7 @@ class HomePage extends JPanel {
         addToCart.setAlignmentX(Component.CENTER_ALIGNMENT);
         addToCart.addActionListener(e -> {
             SearchResultsPage.sharedCart.add(item);
-            JOptionPane.showMessageDialog(this, item.itemName + " added to cart!", "Cart Update", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, item.itemName + " added to cart!\n" + "This will add " + item.points + " points" ,"Cart Update", JOptionPane.INFORMATION_MESSAGE);
         });
         itemPanel.add(Box.createVerticalStrut(1));
         itemPanel.add(addToCart);

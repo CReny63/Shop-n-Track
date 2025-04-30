@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+//update cart tells how many points are gained
 /**
  * client1.src.SearchResultsPage: Displays items matching the search query.
  * At the top, it provides a search bar (with the search button to its right)
@@ -87,7 +88,8 @@ class SearchResultsPage extends JPanel {
             if (item.itemName.toLowerCase().contains(query)) {
                 resultsPanel.add(createItemPanel(item));
             }
-            if (item.storeName.toLowerCase().contains(query)) {
+            else
+                if (item.storeName.toLowerCase().contains(query)) {
                 resultsPanel.add(createItemPanel(item));
             }
         }
@@ -139,6 +141,7 @@ class SearchResultsPage extends JPanel {
             sharedCart.add(item);
             JOptionPane.showMessageDialog(this, item.itemName + " added to cart!",
                     "Cart Update", JOptionPane.INFORMATION_MESSAGE);
+            //earn x amount of points at checkout, update csv file to contain this info in database
         });
         itemPanel.add(Box.createVerticalStrut(5));
         itemPanel.add(addToCartButton);

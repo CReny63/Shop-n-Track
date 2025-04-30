@@ -134,25 +134,27 @@ public class MainFrame extends JFrame {
             // PARSE CSV
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(csvConn.getInputStream()))) {
-                br.readLine(); // skip header
                 String line;
                 while ((line = br.readLine()) != null) {
                     String[] parts = line.split(",");
                     if (parts.length >= 4) {
                         String nm    = parts[0].trim();
                         String store = parts[1].trim();
-                        double cur   = Double.parseDouble(parts[2].trim());
-                        String img   = parts[3].trim();
+                        String storeRep = parts[2].trim();
+                        int points = Integer.parseInt(parts[3].trim());
+                        double cur   = Double.parseDouble(parts[4].trim());
+                        String img   = parts[5].trim();
+
 
                         // parse any extra historical prices
                         List<Double> history = new ArrayList<>();
-                        for (int i = 4; i < parts.length; i++) {
+                        for (int i = 6; i < parts.length; i++) {
                             try { history.add(Double.parseDouble(parts[i].trim())); }
                             catch (NumberFormatException ignore) {}
                         }
                         double[] prev = history.stream().mapToDouble(d -> d).toArray();
 
-                        list.add(new Item(nm, store, cur, img, prev));
+                        list.add(new Item(nm, store, storeRep, points, cur, img, prev));
                     }
                 }
             }
