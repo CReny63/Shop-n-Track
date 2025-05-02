@@ -8,7 +8,18 @@ import java.awt.*;
 /**
  * client1.src.ProfilePage: Displays the user's account information in a professional layout.
  */
+
+
 class ProfilePage extends JPanel {
+
+    private String user;
+    private String password;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private int rewardPoints;
+    private List purchaseHist;
+
     public ProfilePage(MainFrame frame, User user) {
         setLayout(new BorderLayout());
         JLabel header = new JLabel("User Profile", SwingConstants.CENTER);

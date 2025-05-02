@@ -9,14 +9,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-//update cart tells how many points are gained
-/**
- * client1.src.SearchResultsPage: Displays items matching the search query.
- * At the top, it provides a search bar (with the search button to its right)
- * and the account button which is replaced with "View Profile" if the user is logged in.
- * Also includes a "View Cart" button at the bottom.
- */
-class SearchResultsPage extends JPanel {
+// SearchResultsPage: Displays items matching the search query.
+// At the top, it provides a search bar (with the search button to its right)
+// and the account button which is replaced with "View Profile" if the user is logged in.
+// Also includes a "View Cart" button with redeem-points functionality.
+public class SearchResultsPage extends JPanel {
     private MainFrame frame;
     private JTextField searchField;
     private JPanel resultsPanel;
@@ -45,7 +42,6 @@ class SearchResultsPage extends JPanel {
         searchPanel.add(searchButton);
         topPanel.add(searchPanel, BorderLayout.CENTER);
 
-        // Account button: if user not logged in, show login; else view profile.
         JButton accountButton = new JButton();
         accountButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
         if (MainFrame.currentUser == null) {
@@ -71,7 +67,7 @@ class SearchResultsPage extends JPanel {
         JScrollPane scrollPane = new JScrollPane(resultsPanel);
         add(scrollPane, BorderLayout.CENTER);
 
-        // Listen for changes in the search field, allows for instant update when typing
+        // Listen for changes in the search field
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { performSearch(); }
             public void removeUpdate(DocumentEvent e) { performSearch(); }
@@ -85,11 +81,8 @@ class SearchResultsPage extends JPanel {
         String query = searchField.getText().trim().toLowerCase();
         resultsPanel.removeAll();
         for (Item item : MainFrame.allItems) {
-            if (item.itemName.toLowerCase().contains(query)) {
-                resultsPanel.add(createItemPanel(item));
-            }
-            else
-                if (item.storeName.toLowerCase().contains(query)) {
+            if (item.itemName.toLowerCase().contains(query) ||
+                    item.storeName.toLowerCase().contains(query)) {
                 resultsPanel.add(createItemPanel(item));
             }
         }
@@ -104,7 +97,6 @@ class SearchResultsPage extends JPanel {
         itemPanel.setPreferredSize(new Dimension(150, 260));
         itemPanel.setBackground(new Color(245, 245, 245));
 
-        // Load image via server endpoint
         try {
             URL url = new URL(SERVER_BASE + "/ItemPics/" + item.imageFile);
             Image itemImage = new ImageIcon(url).getImage();
@@ -114,26 +106,22 @@ class SearchResultsPage extends JPanel {
             itemPanel.add(imgLabel);
         } catch (Exception ignored) {}
 
-        // Item name
         JLabel nameLabel = new JLabel(item.itemName, SwingConstants.CENTER);
         nameLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         nameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         itemPanel.add(Box.createVerticalStrut(5));
         itemPanel.add(nameLabel);
 
-        // Store label
         JLabel storeLabel = new JLabel(item.storeName, SwingConstants.CENTER);
         storeLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         storeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         itemPanel.add(storeLabel);
 
-        // Price label
         JLabel priceLabel = new JLabel(String.format("$%.2f", item.currentPrice), SwingConstants.CENTER);
         priceLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         priceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         itemPanel.add(priceLabel);
 
-        // Add to Cart button
         JButton addToCartButton = new JButton("Add to Cart");
         addToCartButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
         addToCartButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -141,12 +129,10 @@ class SearchResultsPage extends JPanel {
             sharedCart.add(item);
             JOptionPane.showMessageDialog(this, item.itemName + " added to cart!",
                     "Cart Update", JOptionPane.INFORMATION_MESSAGE);
-            //earn x amount of points at checkout, update csv file to contain this info in database
         });
         itemPanel.add(Box.createVerticalStrut(5));
         itemPanel.add(addToCartButton);
 
-        // View Details button
         JButton viewDetailsButton = new JButton("View Details");
         viewDetailsButton.setFont(new Font("SansSerif", Font.PLAIN, 14));
         viewDetailsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -157,26 +143,99 @@ class SearchResultsPage extends JPanel {
         return itemPanel;
     }
 
+    /**
+     * Calculate the total price of all items in the shared cart.
+     */
+    public double getCartTotal() {
+        double sum = 0;
+        for (Item item : sharedCart) {
+            sum += item.currentPrice;
+        }
+        return sum;
+    }
+
     protected void displayCart() {
         JPanel cartPanel = new JPanel(new BorderLayout());
-        StringBuilder cartDisplay = new StringBuilder();
-        if (sharedCart.isEmpty())
-            cartDisplay.append("Your cart is empty.");
-        else {
+
+        double originalTotal = getCartTotal();
+        StringBuilder cartTextBuilder = new StringBuilder();
+
+        if (sharedCart.isEmpty()) {
+            cartTextBuilder.append("Your cart is empty.\n");
+        } else {
             for (Item item : sharedCart) {
-                cartDisplay.append(String.format("%s, Store: %s, Price: $%.2f%n",
+                cartTextBuilder.append(String.format("%s, Store: %s, Price: $%.2f%n",
                         item.itemName, item.storeName, item.currentPrice));
             }
         }
-        JTextArea cartText = new JTextArea(cartDisplay.toString());
+        cartTextBuilder.append(String.format("%nOriginal Total: $%.2f", originalTotal));
+
+        JTextArea cartText = new JTextArea(cartTextBuilder.toString());
         cartText.setEditable(false);
         cartPanel.add(new JScrollPane(cartText), BorderLayout.CENTER);
-        JPanel buttonPanel = new JPanel(new FlowLayout());
+
+        final int[] redeemedPoints = {0};
+        final double[] discountDollars = {0};
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton redeemButton = new JButton("Redeem Points");
+        redeemButton.addActionListener(e -> {
+            if (MainFrame.currentUser == null) {
+                JOptionPane.showMessageDialog(this, "Please log in to redeem points.",
+                        "No User", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int available = MainFrame.currentUser.rewardPoints;
+            String input = JOptionPane.showInputDialog(this,
+                    String.format("You have %d points.\nEnter points to redeem (multiples of 100):", available),
+                    "Redeem Points", JOptionPane.QUESTION_MESSAGE);
+            if (input == null) return;
+            int pts;
+            try {
+                pts = Integer.parseInt(input.trim());
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid integer.",
+                        "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (pts <= 0 || pts % 100 != 0) {
+                JOptionPane.showMessageDialog(this, "You must redeem a positive multiple of 100 points.",
+                        "Invalid Amount", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (pts > available) {
+                JOptionPane.showMessageDialog(this, "You don't have that many points.",
+                        "Insufficient Points", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            double dollars = pts / 100.0;
+            if (dollars > originalTotal) {
+                dollars = originalTotal;
+                pts = (int)(originalTotal * 100);
+            }
+            redeemedPoints[0] = pts;
+            discountDollars[0] = dollars;
+            MainFrame.currentUser.rewardPoints -= pts;
+
+            StringBuilder updated = new StringBuilder();
+            for (Item item : sharedCart) {
+                updated.append(String.format("%s, Store: %s, Price: $%.2f%n",
+                        item.itemName, item.storeName, item.currentPrice));
+            }
+            double newTotal = originalTotal - discountDollars[0];
+            updated.append(String.format("%nOriginal Total: $%.2f", originalTotal));
+            updated.append(String.format("%nRedeemed: %d points → $%.2f", redeemedPoints[0], discountDollars[0]));
+            updated.append(String.format("%nNew Total: $%.2f", newTotal));
+            updated.append(String.format("%nRemaining Points: %d", MainFrame.currentUser.rewardPoints));
+            cartText.setText(updated.toString());
+        });
+        buttonPanel.add(redeemButton);
         cartPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         int result = JOptionPane.showOptionDialog(this, cartPanel, "Shopping Cart",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, new String[]{"Checkout", "Close"}, "Close");
+
         if (result == 0) {
             if (MainFrame.currentUser == null) {
                 JOptionPane.showMessageDialog(this, "Please log in to checkout.",
@@ -191,7 +250,9 @@ class SearchResultsPage extends JPanel {
                     MainFrame.currentUser.rewardPoints += 10;
                 }
                 sharedCart.clear();
-                JOptionPane.showMessageDialog(this, "Checkout successful! Reward points updated.",
+                JOptionPane.showMessageDialog(this,
+                        String.format("Checkout successful!%nYou saved $%.2f by redeeming %d points.%nCurrent points balance: %d",
+                                discountDollars[0], redeemedPoints[0], MainFrame.currentUser.rewardPoints),
                         "Checkout", JOptionPane.INFORMATION_MESSAGE);
             }
         }
