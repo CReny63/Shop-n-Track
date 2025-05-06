@@ -1,14 +1,26 @@
 package client1.src;
 
-import common.src.*;
+import common.src.User;
+import common.src.UserDAO;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * client1.src.LoginPage: A standalone page for logging in or creating an account.
- * Contains a temporary "Bypass" button for testing.
+ * client1.src.LoginPage: Validates credentials by POSTing to /api/login,
+ * receives the full CSV line on success, parses it, and populates the User.
  */
-class LoginPage extends JPanel {
+public class LoginPage extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
 
@@ -37,84 +49,48 @@ class LoginPage extends JPanel {
         add(passwordField, gbc);
 
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton loginButton = new JButton("Sign In");
-        loginButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        JButton loginButton  = new JButton("Sign In");
         JButton createButton = new JButton("Create Account");
+        JButton backButton   = new JButton("Back");
+        loginButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
         createButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        JButton bypassButton = new JButton("Temporary Bypass");
-        bypassButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        JButton backButton = new JButton("Back");
         backButton.setFont(new Font("SansSerif", Font.PLAIN, 16));
+
         buttonPanel.add(loginButton);
         buttonPanel.add(createButton);
-        buttonPanel.add(bypassButton);
         buttonPanel.add(backButton);
         gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
         add(buttonPanel, gbc);
 
         loginButton.addActionListener(e -> {
-            String username = usernameField.getText().trim();
-            String password = new String(passwordField.getPassword()).trim();
-            boolean found = false;
-            for (User u : MainFrame.accounts) {
-                if (u.username.equals(username) && u.password.equals(password)) {
-                    MainFrame.currentUser = u;
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                JOptionPane.showMessageDialog(this, "Invalid username or password.",
-                        "Login Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                frame.showSearchResults("");
-            }
-        });
-
-        createButton.addActionListener(e -> {
-            String username = usernameField.getText().trim();
-            String password = new String(passwordField.getPassword()).trim();
-            for (User u : MainFrame.accounts) {
-                if (u.username.equals(username)) {
-                    JOptionPane.showMessageDialog(this, "Username already exists.",
-                            "Creation Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            }
-            if (username.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please enter both username and password.",
+            String user = usernameField.getText().trim();
+            String pass = new String(passwordField.getPassword()).trim();
+            if (user.isEmpty() || pass.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Please enter both username and password.",
                         "Input Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            User newUser = new User(username, password);
-            MainFrame.accounts.add(newUser);
-            MainFrame.currentUser = newUser;
-            JOptionPane.showMessageDialog(this, "Account created successfully!",
-                    "Success", JOptionPane.INFORMATION_MESSAGE);
-            frame.showHomePage();
-        });
 
-        bypassButton.addActionListener(e -> {
-            String testUsername = "testUser";
-            String testPassword = "test";
-            boolean found = false;
-            for (User u : MainFrame.accounts) {
-                if (u.username.equals(testUsername)) {
-                    MainFrame.currentUser = u;
-                    found = true;
-                    break;
+            try {
+                // Delegate to UserDAO.fetchUser(...) instead of manual HTTP + parsing
+                User current = UserDAO.fetchUser(user, pass);
+                if (current != null) {
+                    MainFrame.currentUser = current;
+                    frame.showSearchResults("");
+                } else {
+                    JOptionPane.showMessageDialog(this,
+                            "Invalid username or password.",
+                            "Login Failed", JOptionPane.ERROR_MESSAGE);
                 }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Error contacting server: " + ex.getMessage(),
+                        "Network Error", JOptionPane.ERROR_MESSAGE);
             }
-            if (!found) {
-                User testUser = new User(testUsername, testPassword);
-                MainFrame.accounts.add(testUser);
-                MainFrame.currentUser = testUser;
-            }
-            JOptionPane.showMessageDialog(this, "Bypass activated. Logged in as " + testUsername + ".",
-                    "Bypass Login", JOptionPane.INFORMATION_MESSAGE);
-            frame.showHomePage();
         });
 
+        createButton.addActionListener(e -> frame.showCreateAccountPage());
         backButton.addActionListener(e -> frame.showHomePage());
     }
 }

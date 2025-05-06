@@ -12,6 +12,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class MainFrame extends JFrame {
     private final Client client;
     private final CardLayout cardLayout;
@@ -21,6 +25,7 @@ public class MainFrame extends JFrame {
     public static final String PAGE_RESULTS  = "SearchResultsPage";
     public static final String PAGE_ITEMINFO = "ItemInfoPage";
     public static final String PAGE_LOGIN    = "LoginPage";
+    public static final String PAGE_CREATE_ACCOUNT = "CreateAccountPage";
     public static final String PAGE_PROFILE  = "ProfilePage";
 
     public static User currentUser = null;
@@ -110,6 +115,11 @@ public class MainFrame extends JFrame {
         cardLayout.show(contentPanel, PAGE_LOGIN);
     }
 
+    public void showCreateAccountPage() {
+        contentPanel.add(new CreateAccountPage(this), PAGE_CREATE_ACCOUNT);
+        cardLayout.show(contentPanel, PAGE_CREATE_ACCOUNT);
+    }
+
     public void showProfile(User user) {
         ProfilePage page = new ProfilePage(this, user);
         contentPanel.add(page, PAGE_PROFILE);
@@ -144,7 +154,6 @@ public class MainFrame extends JFrame {
                         int points = Integer.parseInt(parts[3].trim());
                         double cur   = Double.parseDouble(parts[4].trim());
                         String img   = parts[5].trim();
-
 
                         // parse any extra historical prices
                         List<Double> history = new ArrayList<>();
